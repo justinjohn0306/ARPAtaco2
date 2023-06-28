@@ -1,0 +1,26 @@
+5c5
+<
+---
+> import io
+9,10c9,13
+<     data = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
+<     data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+---
+>     # no obvious way to make it rgba... https://github.com/matplotlib/matplotlib/issues/5336#issuecomment-388736185
+>     buf = io.BytesIO()
+>     fig.savefig(buf, format="rgba")
+>     data = np.fromstring(buf.getvalue(), dtype=np.uint8, sep='')
+>     data = data.reshape(fig.canvas.get_width_height()[::-1] + (4,))
+15c18
+<     fig, ax = plt.subplots(figsize=(6, 4))
+---
+>     fig, ax = plt.subplots(figsize=(9, 6))
+17c20
+<                    interpolation='none')
+---
+>                    interpolation='none', cmap='inferno')
+35c38
+<                    interpolation='none')
+---
+>                    interpolation='none', cmap='inferno')
+
