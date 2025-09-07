@@ -2,22 +2,28 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pylab as plt
 import numpy as np
-import io
+
 
 def save_figure_to_numpy(fig):
-    # save it to a numpy array.
-    # no obvious way to make it rgba... https://github.com/matplotlib/matplotlib/issues/5336#issuecomment-388736185
-    buf = io.BytesIO()
-    fig.savefig(buf, format="rgba")
-    data = np.fromstring(buf.getvalue(), dtype=np.uint8, sep='')
-    data = data.reshape(fig.canvas.get_width_height()[::-1] + (4,))
+    # Ensure the figure is rendered
+    fig.canvas.draw()
+    
+    # Get the RGBA buffer from the figure
+    buf = fig.canvas.buffer_rgba()
+    
+    # Convert it to a NumPy array
+    data = np.asarray(buf)
+    
+    # Slice to get RGB only (remove alpha channel)
+    data = data[:, :, :3]
+    
     return data
 
 
 def plot_alignment_to_numpy(alignment, info=None):
-    fig, ax = plt.subplots(figsize=(9, 6))
+    fig, ax = plt.subplots(figsize=(6, 4))
     im = ax.imshow(alignment, aspect='auto', origin='lower',
-                   interpolation='none', cmap='inferno')
+                   interpolation='none')
     fig.colorbar(im, ax=ax)
     xlabel = 'Decoder timestep'
     if info is not None:
@@ -35,7 +41,7 @@ def plot_alignment_to_numpy(alignment, info=None):
 def plot_spectrogram_to_numpy(spectrogram):
     fig, ax = plt.subplots(figsize=(12, 3))
     im = ax.imshow(spectrogram, aspect="auto", origin="lower",
-                   interpolation='none', cmap='inferno')
+                   interpolation='none')
     plt.colorbar(im, ax=ax)
     plt.xlabel("Frames")
     plt.ylabel("Channels")
